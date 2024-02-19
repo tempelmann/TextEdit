@@ -84,9 +84,9 @@
 
 - (id)init {
     if (self = [super initWithWindowNibName:@"DocumentWindow"]) {
-	layoutMgr = [[NSLayoutManager allocWithZone:[self zone]] init];
-	[layoutMgr setDelegate:self];
-	[layoutMgr setAllowsNonContiguousLayout:YES];
+		layoutMgr = [[NSLayoutManager alloc] init];
+		[layoutMgr setDelegate:self];
+		[layoutMgr setAllowsNonContiguousLayout:YES];
     }
     return self;
 }
@@ -99,11 +99,8 @@
     [[self firstTextView] removeObserver:self forKeyPath:@"backgroundColor"];
     [scrollView removeObserver:self forKeyPath:@"scaleFactor"];
     [[scrollView verticalScroller] removeObserver:self forKeyPath:@"scrollerStyle"];
-    [layoutMgr release];
     
     [self showRulerDelayed:NO];
-    
-    [super dealloc]; // NSWindowController deallocates all the nib objects
 }
 
 /* This method can be called in three different situations (number three is a special TextEdit case):
@@ -114,7 +111,7 @@
    The window can be visible or hidden at the time of the message.
 */
 - (void)setDocument:(Document *)doc {
-    Document *oldDoc = [[self document] retain];
+    Document *oldDoc = [self document];
     
     if (oldDoc) {
         [layoutMgr unbind:@"hyphenationFactor"];
@@ -126,35 +123,33 @@
         [[self firstTextView] bind:@"editable" toObject:self withKeyPath:@"document.readOnly" options:[NSDictionary dictionaryWithObject:NSNegateBooleanTransformerName forKey:NSValueTransformerNameBindingOption]];
     }
     if (oldDoc != doc) {
-	if (oldDoc) {
-            /* Remove layout manager from the old Document's text storage. No need to retain as we already own the object. */
-	    [[oldDoc textStorage] removeLayoutManager:layoutMgr];
-	    
-	    [oldDoc removeObserver:self forKeyPath:@"printInfo"];
-	    [oldDoc removeObserver:self forKeyPath:@"richText"];
-	    [oldDoc removeObserver:self forKeyPath:@"viewSize"];
-	    [oldDoc removeObserver:self forKeyPath:@"hasMultiplePages"];
-	}
-	
-	if (doc) {
+		if (oldDoc) {
+				/* Remove layout manager from the old Document's text storage. No need to retain as we already own the object. */
+			[[oldDoc textStorage] removeLayoutManager:layoutMgr];
+			
+			[oldDoc removeObserver:self forKeyPath:@"printInfo"];
+			[oldDoc removeObserver:self forKeyPath:@"richText"];
+			[oldDoc removeObserver:self forKeyPath:@"viewSize"];
+			[oldDoc removeObserver:self forKeyPath:@"hasMultiplePages"];
+		}
+		
+		if (doc) {
             [[doc textStorage] addLayoutManager:layoutMgr];
 	    
-	    if ([self isWindowLoaded]) {
-                [self setHasMultiplePages:[doc hasMultiplePages] force:NO];
-                [self setupInitialTextViewSharedState];
-                [self setupWindowForDocument];
-		if ([doc hasMultiplePages]) [scrollView setScaleFactor:[[self document] scaleFactor] adjustPopup:YES];
-                [[doc undoManager] removeAllActions];
-            }
-	    
-	    [doc addObserver:self forKeyPath:@"printInfo" options:0 context:NULL];
-	    [doc addObserver:self forKeyPath:@"richText" options:0 context:NULL];
-	    [doc addObserver:self forKeyPath:@"viewSize" options:0 context:NULL];
-	    [doc addObserver:self forKeyPath:@"hasMultiplePages" options:0 context:NULL];
-	}
+			if ([self isWindowLoaded]) {
+				[self setHasMultiplePages:[doc hasMultiplePages] force:NO];
+				[self setupInitialTextViewSharedState];
+				[self setupWindowForDocument];
+				if ([doc hasMultiplePages]) [scrollView setScaleFactor:[[self document] scaleFactor] adjustPopup:YES];
+				[[doc undoManager] removeAllActions];
+			}
+			
+			[doc addObserver:self forKeyPath:@"printInfo" options:0 context:NULL];
+			[doc addObserver:self forKeyPath:@"richText" options:0 context:NULL];
+			[doc addObserver:self forKeyPath:@"viewSize" options:0 context:NULL];
+			[doc addObserver:self forKeyPath:@"hasMultiplePages" options:0 context:NULL];
+		}
     }
-    
-    [oldDoc release];
 }
 
 - (void)breakUndoCoalescing {
@@ -200,13 +195,13 @@
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     if (object == [self firstTextView]) {
-	if ([keyPath isEqualToString:@"backgroundColor"]) {
-	    [[self document] setBackgroundColor:[[self firstTextView] backgroundColor]];
-	} 
+		if ([keyPath isEqualToString:@"backgroundColor"]) {
+			[[self document] setBackgroundColor:[[self firstTextView] backgroundColor]];
+		} 
     } else if (object == scrollView) {
-	if ([keyPath isEqualToString:@"scaleFactor"]) {
-	    [[self document] setScaleFactor:[scrollView scaleFactor]];
-	} 
+		if ([keyPath isEqualToString:@"scaleFactor"]) {
+			[[self document] setScaleFactor:[scrollView scaleFactor]];
+		} 
     } else if (object == [scrollView verticalScroller]) {
         if ([keyPath isEqualToString:@"scrollerStyle"]) {
             [self invalidateRestorableState];
@@ -216,18 +211,18 @@
             }
         }
     } else if (object == [self document]) {
-	if ([keyPath isEqualToString:@"printInfo"]) {
-	    [self printInfoUpdated];
-	} else if ([keyPath isEqualToString:@"viewSize"]) {
-	    if (!isSettingSize) {
-		NSSize size = [[self document] viewSize];
-		if (!NSEqualSizes(size, NSZeroSize)) {
-		    [self resizeWindowForViewSize:size];
+		if ([keyPath isEqualToString:@"printInfo"]) {
+			[self printInfoUpdated];
+		} else if ([keyPath isEqualToString:@"viewSize"]) {
+			if (!isSettingSize) {
+				NSSize size = [[self document] viewSize];
+				if (!NSEqualSizes(size, NSZeroSize)) {
+					[self resizeWindowForViewSize:size];
+				}
+			}
+		} else if ([keyPath isEqualToString:@"hasMultiplePages"]) {
+			[self setHasMultiplePages:[[self document] hasMultiplePages] force:NO];
 		}
-	    }
-	} else if ([keyPath isEqualToString:@"hasMultiplePages"]) {
-	    [self setHasMultiplePages:[[self document] hasMultiplePages] force:NO];
-	}
     }
 }
 
@@ -306,13 +301,13 @@
         if (attachment) {	/* If there is an attachment and it is on an attachment character, remove the character */
             unichar ch = [[attrString string] characterAtIndex:loc];
             if (ch == NSAttachmentCharacter) {
-		if ([view shouldChangeTextInRange:NSMakeRange(loc, 1) replacementString:@""]) {
-		    [attrString replaceCharactersInRange:NSMakeRange(loc, 1) withString:@""];
-		    [view didChangeText];
-		}
+				if ([view shouldChangeTextInRange:NSMakeRange(loc, 1) replacementString:@""]) {
+					[attrString replaceCharactersInRange:NSMakeRange(loc, 1) withString:@""];
+					[view didChangeText];
+				}
                 end = [attrString length];	/* New length */
             }
-	    else loc++;	/* Just skip over the current character... */
+	    	else loc++;	/* Just skip over the current character... */
         }
     	else loc = NSMaxRange(attachmentRange);
     }
@@ -322,67 +317,64 @@
 /* This method implements panel-based "attach" functionality. Note that as-is, it's set to accept all files; however, by setting allowed types on the open panel it can be restricted to images, etc.
 */
 
-- (void)presenterDidPresent:(BOOL)inDidSucceed soContinue:(void (^)(BOOL didSucceed))inContinuerCopy {
-    inContinuerCopy(inDidSucceed);
-    Block_release(inContinuerCopy);
+- (void)presenterDidPresent:(BOOL)inDidSucceed soContinue:(const void*)contextInfo {
+    void (^inContinuer)(BOOL didSucceed) = (__bridge_transfer id)contextInfo;	// https://stackoverflow.com/a/8373598/43615
+    inContinuer(inDidSucceed);
 }
 
 - (void)chooseAndAttachFiles:(id)sender {
     [[self document] performActivityWithSynchronousWaiting:YES usingBlock:^(void (^activityCompletionHandler)(void)) {
-    NSOpenPanel *panel = [NSOpenPanel openPanel];
-    [panel setCanChooseDirectories:YES];
-    [panel setAllowsMultipleSelection:YES];
-    // Use the 10.6-introduced sheet API with block handler
-    [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger result) {
-	if (result == NSFileHandlingPanelOKButton) {	// Only if not cancelled
-            NSArray *urls = [panel URLs];
-	    NSTextView *textView = [self firstTextView];
-	    NSInteger numberOfErrors = 0;
-	    NSError *error = nil;
-	    NSMutableAttributedString *attachments = [[NSMutableAttributedString alloc] init];
-            
-	    // Process all the attachments, creating an attributed string 
-	    for (NSURL *url in urls) {
-		NSFileWrapper *wrapper = [[NSFileWrapper alloc] initWithURL:url options:NSFileWrapperReadingImmediate error:&error];
-		if (wrapper) {
-		    NSTextAttachment *attachment = [[NSTextAttachment alloc] initWithFileWrapper:wrapper];
-		    [attachments appendAttributedString:[NSAttributedString attributedStringWithAttachment:attachment]];
-		    [wrapper release];
-		    [attachment release];
-		} else {
-		    numberOfErrors++;
-		}
-	    }
-	    
-	    // We could actually take an approach where on partial success we allow the user to cancel the operation, but since it's easy enough to undo, this seems reasonable enough
-	    if ([attachments length] > 0) {
-		NSRange selectionRange = [textView selectedRange];
-		if ([textView shouldChangeTextInRange:selectionRange replacementString:[attachments string]]) {  // Shouldn't fail, since we are controlling the text view; but if it does, we simply don't allow the change
-		    [[textView textStorage] replaceCharactersInRange:selectionRange withAttributedString:attachments];
-		    [textView didChangeText];
-		}
-	    }
-	    [attachments release];
-	    
-	    [panel orderOut:nil];   // Strictly speaking not necessary, but if we put up an error sheet, a good idea for the panel to be dismissed first
-            
-	    // Deal with errors opening some or all of the attachments
-	    if (numberOfErrors > 0) {
-		if (numberOfErrors > 1) {  // More than one failure, put up a summary error (which doesn't do a good job of communicating the actual errors, but multiple attachments is a relatively rare case). For one error, we present the actual NSError we got back.
-		    // The error message will be different depending on whether all or some of the files were successfully attached.
-		    NSString *description = (numberOfErrors == [urls count]) ? NSLocalizedString(@"None of the items could be attached.", @"Title of alert indicating error during 'Attach Files...' when user tries to attach (insert) multiple files and none can be attached.") : NSLocalizedString(@"Some of the items could not be attached.", @"Title of alert indicating error during 'Attach Files...' when user tries to attach (insert) multiple files and some fail.");
-		    error = [NSError errorWithDomain:TextEditErrorDomain code:TextEditAttachFilesFailure userInfo:[NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, NSLocalizedString(@"The files may be unreadable, or the volume they are on may be inaccessible. Please check in Finder.", @"Recommendation when 'Attach Files...' command fails"), NSLocalizedRecoverySuggestionErrorKey, nil]];
-		}
-                    [[self window] presentError:error modalForWindow:[self window] delegate:self didPresentSelector:@selector(presenterDidPresent:soContinue:) contextInfo:Block_copy(^(BOOL didSucceed) {
-                        activityCompletionHandler();
-                    })];
-                } else {
-                    activityCompletionHandler();
-	    }
-            } else {
-                activityCompletionHandler();
-	}
-    }];
+		NSOpenPanel *panel = [NSOpenPanel openPanel];
+		[panel setCanChooseDirectories:YES];
+		[panel setAllowsMultipleSelection:YES];
+		// Use the 10.6-introduced sheet API with block handler
+		[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger result) {
+			if (result == NSFileHandlingPanelOKButton) {	// Only if not cancelled
+				NSArray *urls = [panel URLs];
+				NSTextView *textView = [self firstTextView];
+				NSInteger numberOfErrors = 0;
+				NSError *error = nil;
+				NSMutableAttributedString *attachments = [[NSMutableAttributedString alloc] init];
+					
+				// Process all the attachments, creating an attributed string 
+				for (NSURL *url in urls) {
+					NSFileWrapper *wrapper = [[NSFileWrapper alloc] initWithURL:url options:NSFileWrapperReadingImmediate error:&error];
+					if (wrapper) {
+						NSTextAttachment *attachment = [[NSTextAttachment alloc] initWithFileWrapper:wrapper];
+						[attachments appendAttributedString:[NSAttributedString attributedStringWithAttachment:attachment]];
+					} else {
+						numberOfErrors++;
+					}
+				}
+
+				// We could actually take an approach where on partial success we allow the user to cancel the operation, but since it's easy enough to undo, this seems reasonable enough
+				if ([attachments length] > 0) {
+					NSRange selectionRange = [textView selectedRange];
+					if ([textView shouldChangeTextInRange:selectionRange replacementString:[attachments string]]) {  // Shouldn't fail, since we are controlling the text view; but if it does, we simply don't allow the change
+						[[textView textStorage] replaceCharactersInRange:selectionRange withAttributedString:attachments];
+						[textView didChangeText];
+					}
+				}
+
+				[panel orderOut:nil];   // Strictly speaking not necessary, but if we put up an error sheet, a good idea for the panel to be dismissed first
+					
+				// Deal with errors opening some or all of the attachments
+				if (numberOfErrors > 0) {
+					if (numberOfErrors > 1) {  // More than one failure, put up a summary error (which doesn't do a good job of communicating the actual errors, but multiple attachments is a relatively rare case). For one error, we present the actual NSError we got back.
+						// The error message will be different depending on whether all or some of the files were successfully attached.
+						NSString *description = (numberOfErrors == [urls count]) ? NSLocalizedString(@"None of the items could be attached.", @"Title of alert indicating error during 'Attach Files...' when user tries to attach (insert) multiple files and none can be attached.") : NSLocalizedString(@"Some of the items could not be attached.", @"Title of alert indicating error during 'Attach Files...' when user tries to attach (insert) multiple files and some fail.");
+						error = [NSError errorWithDomain:TextEditErrorDomain code:TextEditAttachFilesFailure userInfo:[NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, NSLocalizedString(@"The files may be unreadable, or the volume they are on may be inaccessible. Please check in Finder.", @"Recommendation when 'Attach Files...' command fails"), NSLocalizedRecoverySuggestionErrorKey, nil]];
+					}
+					[[self window] presentError:error modalForWindow:[self window] delegate:self didPresentSelector:@selector(presenterDidPresent:soContinue:) contextInfo:Block_copy((__bridge void *)^(BOOL didSucceed) {
+						activityCompletionHandler();
+					})];
+				} else {
+					activityCompletionHandler();
+				}
+			} else {
+				activityCompletionHandler();
+			}
+		}];
     }];
 }
 
@@ -455,12 +447,11 @@
 }
 
 - (void)addPage {
-    NSZone *zone = [self zone];
     NSUInteger numberOfPages = [self numberOfPages];
     MultiplePageView *pagesView = [scrollView documentView];
     
     NSSize textSize = [pagesView documentSizeInPage];
-    NSTextContainer *textContainer = [[NSTextContainer allocWithZone:zone] initWithContainerSize:textSize];
+    NSTextContainer *textContainer = [[NSTextContainer alloc] initWithContainerSize:textSize];
     NSTextView *textView;
     NSUInteger orientation = [pagesView layoutOrientation];
     NSRect visibleRect = [pagesView visibleRect];
@@ -475,7 +466,7 @@
         [pagesView scrollRectToVisible:visibleRect];
     }
 
-    textView = [[NSTextView allocWithZone:zone] initWithFrame:[pagesView documentRectForPageNumber:numberOfPages] textContainer:textContainer];
+    textView = [[NSTextView alloc] initWithFrame:[pagesView documentRectForPageNumber:numberOfPages] textContainer:textContainer];
     [textView setLayoutOrientation:orientation];
     [textView setHorizontallyResizable:NO];
     [textView setVerticallyResizable:NO];
@@ -487,9 +478,6 @@
     [self configureTypingAttributesAndDefaultParagraphStyleForTextView:textView];
     [pagesView addSubview:textView];
     [[self layoutManager] addTextContainer:textContainer];
-
-    [textView release];
-    [textContainer release];
 }
 
 - (void)removePage {
@@ -509,7 +497,6 @@
 
 - (void)setHasMultiplePages:(BOOL)pages force:(BOOL)force {
     NSTextLayoutOrientation orientation = NSTextLayoutOrientationHorizontal;
-    NSZone *zone = [self zone];
     
     if (!force && (hasMultiplePages == pages)) return;
     
@@ -528,7 +515,7 @@
 
     if (hasMultiplePages) {
         NSTextView *textView = [self firstTextView];
-        MultiplePageView *pagesView = [[MultiplePageView allocWithZone:zone] init];
+        MultiplePageView *pagesView = [[MultiplePageView alloc] init];
 	
         [scrollView setDocumentView:pagesView];
 	
@@ -561,11 +548,10 @@
             }
             [pagesView scrollRectToVisible:visRect];
         }
-        [pagesView release];
     } else {
         NSSize size = [scrollView contentSize];
-        NSTextContainer *textContainer = [[NSTextContainer allocWithZone:zone] initWithContainerSize:NSMakeSize(size.width, CGFLOAT_MAX)];
-        NSTextView *textView = [[NSTextView allocWithZone:zone] initWithFrame:NSMakeRect(0.0, 0.0, size.width, size.height) textContainer:textContainer];
+        NSTextContainer *textContainer = [[NSTextContainer alloc] initWithContainerSize:NSMakeSize(size.width, CGFLOAT_MAX)];
+        NSTextView *textView = [[NSTextView alloc] initWithFrame:NSMakeRect(0.0, 0.0, size.width, size.height) textContainer:textContainer];
 	
         // Insert the single container as the first container in the layout manager before removing the existing pages in order to preserve the shared view state.
         [[self layoutManager] insertTextContainer:textContainer atIndex:0];
@@ -594,9 +580,6 @@
 
         [scrollView setHasVerticalScroller:YES];
         [scrollView setHasHorizontalScroller:YES];
-
-        [textView release];
-        [textContainer release];
 	
         // Show the selected region
         [[self firstTextView] scrollRangeToVisible:[[self firstTextView] selectedRange]];
@@ -814,7 +797,7 @@
             NSString *alternateButton = NSLocalizedString(@"Cancel", @"Button choice that allows the user to cancel.");
             NSString *informativeText = NSLocalizedString(@"Making a rich text document plain will lose all text styles (such as fonts and colors), images, attachments, and document properties.", @"Subtitle of alert confirming Make Plain Text");
             NSAlert *alert = [NSAlert alertWithMessageText:messageText defaultButton:defaultButton alternateButton:alternateButton otherButton:nil informativeTextWithFormat:@"%@", informativeText];
-            [alert beginSheetModalForWindow:[[self document] windowForSheet] modalDelegate:self didEndSelector:@selector(didEndToggleRichSheet:returnCode:contextInfo:) contextInfo:Block_copy(^(BOOL okToToggleRich){
+            [alert beginSheetModalForWindow:[[self document] windowForSheet] modalDelegate:self didEndSelector:@selector(didEndToggleRichSheet:returnCode:contextInfo:) contextInfo:Block_copy((__bridge void *)^(BOOL okToToggleRich){
                 if (okToToggleRich) {
                     continueTogglingRich();
                 } else {
@@ -828,9 +811,9 @@
     }];
 }
 
-- (void)didEndToggleRichSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void (^)(BOOL))block {
+- (void)didEndToggleRichSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(const void*)contextInfo {
+    void (^block)(BOOL) = (__bridge_transfer id)contextInfo;	// https://stackoverflow.com/a/8373598/43615
     block(returnCode == NSAlertDefaultReturn);
-    Block_release(block);
 }
 
 /* Layout orientation
@@ -883,14 +866,14 @@
     [[self document] setTransient:NO]; // Since the user has taken an interest in the window, clear the document's transient status
     
     if (!isSettingSize) {   // There is potential for recursion, but typically this is prevented in NSWindow which doesn't call this method if the frame doesn't change. However, just in case...
-	isSettingSize = YES;
-	NSSize viewSize = [[scrollView class] contentSizeForFrameSize:[scrollView frame].size hasHorizontalScroller:[scrollView hasHorizontalScroller] hasVerticalScroller:[scrollView hasVerticalScroller] borderType:[scrollView borderType]];
-	
-	if (![[self document] hasMultiplePages]) {
-	    viewSize.width -= (defaultTextPadding() * 2.0);
-	}
-	[[self document] setViewSize:viewSize];
-	isSettingSize = NO;
+		isSettingSize = YES;
+		NSSize viewSize = [[scrollView class] contentSizeForFrameSize:[scrollView frame].size hasHorizontalScroller:[scrollView hasHorizontalScroller] hasVerticalScroller:[scrollView hasVerticalScroller] borderType:[scrollView borderType]];
+		
+		if (![[self document] hasMultiplePages]) {
+			viewSize.width -= (defaultTextPadding() * 2.0);
+		}
+		[[self document] setViewSize:viewSize];
+		isSettingSize = NO;
     }
 }
 
@@ -911,14 +894,14 @@
     if (linkURL) {
         NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
         if ([linkURL isFileURL]) {
-	    NSError *error;
+	    	NSError *error;
             if (![linkURL checkResourceIsReachableAndReturnError:&error]) {	// To be able to present an error panel, see if the file is reachable
                 [[self document] performActivityWithSynchronousWaiting:YES usingBlock:^(void (^activityCompletionHandler)(void)) {
-                    [[self window] presentError:error modalForWindow:[self window] delegate:self didPresentSelector:@selector(presenterDidPresent:soContinue:) contextInfo:Block_copy(^(BOOL didSucceed) {
+                    [[self window] presentError:error modalForWindow:[self window] delegate:self didPresentSelector:@selector(presenterDidPresent:soContinue:) contextInfo:Block_copy((__bridge void *)^(BOOL didSucceed) {
                         activityCompletionHandler();
                     })];
                 }];
-		return YES;
+			return YES;
 	    } else {
                 // Special case: We want to open text types in TextEdit, as presumably that is what was desired
                 NSString *typeIdentifier = nil;

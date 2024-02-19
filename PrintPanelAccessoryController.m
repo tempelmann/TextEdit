@@ -76,7 +76,6 @@
         [self removeObserver:self forKeyPath:@"pageNumbering"];
         [self removeObserver:self forKeyPath:@"wrappingToFit"];
     }
-    [super dealloc];
 }
 
 /* The values are sticky, so write them out to defaults when they change

@@ -67,7 +67,6 @@
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [NSApp removeObserver:self forKeyPath:@"mainWindow.windowController.document"];
-    [super dealloc];
 }
 
 /* inspectedDocument is a KVO-compliant property, which this method manages. Anytime we hear about the mainWindow, or the mainWindow's document change, we check to see what changed.  Note that activeDocumentChanged doesn't mean document contents changed, but rather we have a new active document.

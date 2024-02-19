@@ -66,16 +66,16 @@ static NSDictionary *defaultValues() {
                 [NSNumber numberWithBool:YES], WrapToFitWhenPrinting,
                 [NSNumber numberWithBool:YES], RichText, 
                 [NSNumber numberWithBool:NO], ShowPageBreaks,
-		[NSNumber numberWithBool:NO], OpenPanelFollowsMainWindow,
-		[NSNumber numberWithBool:YES], AddExtensionToNewPlainTextFiles,
+				[NSNumber numberWithBool:NO], OpenPanelFollowsMainWindow,
+				[NSNumber numberWithBool:YES], AddExtensionToNewPlainTextFiles,
                 [NSNumber numberWithInteger:90], WindowWidth, 
                 [NSNumber numberWithInteger:30], WindowHeight, 
                 [NSNumber numberWithUnsignedInteger:NoStringEncoding], PlainTextEncodingForRead,
                 [NSNumber numberWithUnsignedInteger:NoStringEncoding], PlainTextEncodingForWrite,
-		[NSNumber numberWithInteger:8], TabWidth,
-		[NSNumber numberWithInteger:50000], ForegroundLayoutToIndex,       
+				[NSNumber numberWithInteger:8], TabWidth,
+				[NSNumber numberWithInteger:50000], ForegroundLayoutToIndex,       
                 [NSNumber numberWithBool:NO], IgnoreRichText,
-		[NSNumber numberWithBool:NO], IgnoreHTML,
+				[NSNumber numberWithBool:NO], IgnoreHTML,
                 [NSNumber numberWithBool:YES], CheckSpellingAsYouType,
                 [NSNumber numberWithBool:NO], CheckGrammarWithSpelling,
                 [NSNumber numberWithBool:[NSSpellChecker isAutomaticSpellingCorrectionEnabled]], CorrectSpellingAutomatically,
@@ -110,12 +110,12 @@ static NSDictionary *defaultValues() {
     // Set up default values for preferences managed by NSUserDefaultsController
     [[NSUserDefaults standardUserDefaults] registerDefaults:defaultValues()];
     [[NSUserDefaultsController sharedUserDefaultsController] setInitialValues:defaultValues()];
-#if __LP64__
-    // At some point during 32-to-64 bit transition of TextEdit, some versions erroneously wrote out the value of -1 to defaults. These values cause grief throughout the program under 64-bit, so it's best to clean them out from defaults permanently. Note that it's often considered bad form to write defaults while launching; however, here we do this only once, ever.
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([[defaults objectForKey:PlainTextEncodingForRead] unsignedIntegerValue] == 0xFFFFFFFFFFFFFFFFULL) [defaults removeObjectForKey:PlainTextEncodingForRead];
-    if ([[defaults objectForKey:PlainTextEncodingForWrite] unsignedIntegerValue] == 0xFFFFFFFFFFFFFFFFULL) [defaults removeObjectForKey:PlainTextEncodingForWrite];
-#endif
+	#if __LP64__
+		// At some point during 32-to-64 bit transition of TextEdit, some versions erroneously wrote out the value of -1 to defaults. These values cause grief throughout the program under 64-bit, so it's best to clean them out from defaults permanently. Note that it's often considered bad form to write defaults while launching; however, here we do this only once, ever.
+		NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+		if ([[defaults objectForKey:PlainTextEncodingForRead] unsignedIntegerValue] == 0xFFFFFFFFFFFFFFFFULL) [defaults removeObjectForKey:PlainTextEncodingForRead];
+		if ([[defaults objectForKey:PlainTextEncodingForWrite] unsignedIntegerValue] == 0xFFFFFFFFFFFFFFFFULL) [defaults removeObjectForKey:PlainTextEncodingForWrite];
+	#endif
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
@@ -134,22 +134,22 @@ static NSDictionary *defaultValues() {
     if (type && (filename = origFilename = [pboard stringForType:type])) {
         BOOL success = NO;
         if ([filename isAbsolutePath] && (url = [NSURL fileURLWithPath:filename])) {	// If seems to be a valid absolute path, first try using it as-is
-	    success = [(DocumentController *)[NSDocumentController sharedDocumentController] openDocumentWithContentsOfURL:url display:YES error:&err] != nil;
+	    	success = [(DocumentController *)[NSDocumentController sharedDocumentController] openDocumentWithContentsOfURL:url display:YES error:&err] != nil;
         }
         if (!success) {	// Check to see if the user mistakenly included a carriage return or more at the end of the file name...
             filename = [[filename substringWithRange:[filename lineRangeForRange:NSMakeRange(0, 0)]] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
             if ([filename hasPrefix:@"~"]) filename = [filename stringByExpandingTildeInPath];	// Convert the "~username" case
-	    if (![origFilename isEqual:filename] && [filename isAbsolutePath]) {
+	    	if (![origFilename isEqual:filename] && [filename isAbsolutePath]) {
                 url = [NSURL fileURLWithPath:filename];
-		success = [(DocumentController *)[NSDocumentController sharedDocumentController] openDocumentWithContentsOfURL:url display:YES error:&err] != nil;
-	    }
+				success = [(DocumentController *)[NSDocumentController sharedDocumentController] openDocumentWithContentsOfURL:url display:YES error:&err] != nil;
+	    	}
         }
         // Given that this is a one-way service (no return), we need to put up the error panel ourselves and we do not set *error.
         if (!success) {
-	    if (!err) {
-		err = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileReadInvalidFileNameError userInfo:[NSDictionary dictionaryWithObjectsAndKeys:truncatedString(filename, PATH_MAX+10), NSFilePathErrorKey, nil]];
-	    }
-	    [[NSAlert alertWithError:err] runModal];
+			if (!err) {
+				err = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileReadInvalidFileNameError userInfo:[NSDictionary dictionaryWithObjectsAndKeys:truncatedString(filename, PATH_MAX+10), NSFilePathErrorKey, nil]];
+			}
+			[[NSAlert alertWithError:err] runModal];
         }
     }
 }
@@ -160,7 +160,7 @@ static NSDictionary *defaultValues() {
     Document *document = [(DocumentController *)[NSDocumentController sharedDocumentController] openDocumentWithContentsOfPasteboard:pboard display:YES error:&err];
     
     if (!document) {
-	[[NSAlert alertWithError:err] runModal];
+		[[NSAlert alertWithError:err] runModal];
         // No need to report an error string...
     }
 }

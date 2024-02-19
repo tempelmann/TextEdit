@@ -56,8 +56,6 @@
 
 @implementation PrintingTextView
 
-@synthesize printPanelAccessoryController, originalSize;
-
 /* Override of knowsPageRange: checks printing parameters against the last invocation, and if not the same, resizes the view and relays out the text.  On first invocation, the saved size will be 0,0, which will cause the text to be laid out.
 */
 - (BOOL)knowsPageRange:(NSRangePointer)range {

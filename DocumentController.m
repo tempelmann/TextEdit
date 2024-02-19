@@ -78,10 +78,6 @@
 
 - (void)dealloc {
     [self unbind:@"autosavingDelay"];
-    [customOpenSettings release];
-    [transientDocumentLock release];
-    [displayDocumentLock release];
-    [super dealloc];
 }
 
 /* Create a new document of the default type and initialize its contents from the pasteboard. 
@@ -95,7 +91,7 @@
 
     if (data != nil) {
         NSDictionary *attributes = nil;
-        string = [[[NSAttributedString alloc] initWithData:data options:nil documentAttributes:&attributes error:error] autorelease];
+        string = [[NSAttributedString alloc] initWithData:data options:nil documentAttributes:&attributes error:error];
     
         // We only expect to see plain-text, RTF, and RTFD at this point.
         NSString *docType = [attributes objectForKey:NSDocumentTypeDocumentAttribute];
@@ -122,7 +118,7 @@
             }
             [transientDocumentLock unlock];
             
-            id doc = [[[docClass alloc] initWithType:type error:error] autorelease];
+            id doc = [[docClass alloc] initWithType:type error:error];
             if (!doc) return nil; // error has been set
             
             NSTextStorage *text = [doc textStorage];
@@ -198,8 +194,6 @@
             [transientDoc removeWindowController:controller];
         }
         [transientDoc close];
-        
-        [controllersToTransfer release];
 	
 		// We replaced the value of the transient document with opened document, need to notify accessibility clients.
 		for (NSLayoutManager *layoutManager in [[(Document *)doc textStorage] layoutManagers]) {
@@ -245,7 +239,6 @@
         deferredDocuments = nil;
         [displayDocumentLock unlock];
         for (NSDocument *document in documentsToDisplay) [self displayDocument:document];
-        [documentsToDisplay release];
     } else if (doc && displayDocument) {
         [displayDocumentLock lock];
         if (deferredDocuments) {
@@ -276,7 +269,7 @@
 /* Loads the "encoding" accessory view used in save plain and open panels. There is a checkbox in the accessory which has different purposes in each case; so we let the caller set the title and other info for that checkbox.
 */
 + (NSView *)encodingAccessory:(NSStringEncoding)encoding includeDefaultEntry:(BOOL)includeDefaultItem encodingPopUp:(NSPopUpButton **)popup checkBox:(NSButton **)button {
-    OpenSaveAccessoryOwner *owner = [[[OpenSaveAccessoryOwner alloc] init] autorelease];
+    OpenSaveAccessoryOwner *owner = [[OpenSaveAccessoryOwner alloc] init];
     // Rather than caching, load the accessory view everytime, as it might appear in multiple panels simultaneously.
     if (![[NSBundle mainBundle] loadNibNamed:@"EncodingAccessory" owner:owner topLevelObjects:NULL])  {
         NSLog(@"Failed to load EncodingAccessory.nib");
@@ -302,11 +295,11 @@
     [ignoreRichTextButton setTitle:NSLocalizedString(@"Ignore rich text commands", @"Checkbox indicating that when opening a rich text file, the rich text should be ignored (causing the file to be loaded as plain text)")];
     [ignoreRichTextButton setToolTip:NSLocalizedString(@"If selected, HTML and RTF files will be loaded as plain text, allowing you to see and edit the HTML or RTF directives.", @"Tooltip for checkbox indicating that when opening a rich text file, the rich text should be ignored (causing the file to be loaded as plain text)")];
     if (ignoreRichOrig != ignoreHTMLOrig) {
-	[ignoreRichTextButton setAllowsMixedState:YES];
-	[ignoreRichTextButton setState:NSMixedState];
+		[ignoreRichTextButton setAllowsMixedState:YES];
+		[ignoreRichTextButton setState:NSMixedState];
     } else {
-	if ([ignoreRichTextButton allowsMixedState]) [ignoreRichTextButton setAllowsMixedState:NO];
-	[ignoreRichTextButton setState:ignoreRichOrig ? NSOnState : NSOffState];
+		if ([ignoreRichTextButton allowsMixedState]) [ignoreRichTextButton setAllowsMixedState:NO];
+		[ignoreRichTextButton setState:ignoreRichOrig ? NSOnState : NSOffState];
     }
 
     [super beginOpenPanel:openPanel forTypes:types completionHandler:^(NSInteger result) {

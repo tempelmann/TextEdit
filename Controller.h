@@ -52,14 +52,10 @@
 
 @class Preferences, DocumentPropertiesPanelController, LinePanelController;
 
-@interface Controller : NSObject {
-    IBOutlet Preferences *preferencesController;
-    IBOutlet DocumentPropertiesPanelController *propertiesController;
-    IBOutlet LinePanelController *lineController;
-}
+@interface Controller : NSObject
 
-@property (assign) Preferences *preferencesController;
-@property (assign) DocumentPropertiesPanelController *propertiesController;
-@property (assign) LinePanelController *lineController;
+@property (weak) IBOutlet Preferences *preferencesController;
+@property (weak) IBOutlet DocumentPropertiesPanelController *propertiesController;
+@property (weak) IBOutlet LinePanelController *lineController;
 
 @end
