@@ -193,24 +193,21 @@
         NSEnumerator *controllerEnum = [controllersToTransfer objectEnumerator];
         NSWindowController *controller;
         
-        [controllersToTransfer makeObjectsPerformSelector:@selector(retain)];
-        
         while (controller = [controllerEnum nextObject]) {
             [doc addWindowController:controller];
             [transientDoc removeWindowController:controller];
         }
         [transientDoc close];
         
-        [controllersToTransfer makeObjectsPerformSelector:@selector(release)];
         [controllersToTransfer release];
 	
-	// We replaced the value of the transient document with opened document, need to notify accessibility clients.
-	for (NSLayoutManager *layoutManager in [[(Document *)doc textStorage] layoutManagers]) {
-	    for (NSTextContainer *textContainer in [layoutManager textContainers]) {
-		NSTextView *textView = [textContainer textView];
-		if (textView) NSAccessibilityPostNotification(textView, NSAccessibilityValueChangedNotification);
-	    }
-	}
+		// We replaced the value of the transient document with opened document, need to notify accessibility clients.
+		for (NSLayoutManager *layoutManager in [[(Document *)doc textStorage] layoutManagers]) {
+			for (NSTextContainer *textContainer in [layoutManager textContainers]) {
+			NSTextView *textView = [textContainer textView];
+			if (textView) NSAccessibilityPostNotification(textView, NSAccessibilityValueChangedNotification);
+			}
+		}
 	
     } else {
         [self performSelectorOnMainThread:_cmd withObject:documents waitUntilDone:YES];

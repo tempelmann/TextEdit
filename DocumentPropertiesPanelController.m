@@ -75,16 +75,16 @@
 - (void)activeDocumentChanged {
     id doc = [[[NSApp mainWindow] windowController] document];
     if (doc != inspectedDocument) {
-	if (inspectedDocument) [documentObjectController commitEditing];
-	[self setValue:(doc && [doc isKindOfClass:[Document class]]) ? doc : nil forKey:@"inspectedDocument"];   
+		if (inspectedDocument) [documentObjectController commitEditing];
+		[self setValue:(doc && [doc isKindOfClass:[Document class]]) ? doc : nil forKey:@"inspectedDocument"];   
     }
 }
     
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    if (context == [DocumentPropertiesPanelController class]) {
-	[self activeDocumentChanged];
+    if (context == (__bridge void * _Nullable)([DocumentPropertiesPanelController class])) {
+		[self activeDocumentChanged];
     } else {
-	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
     }
 }
 
@@ -106,7 +106,7 @@
 
     // Make sure we start inspecting the document that is currently active, and start observing changes
     [self activeDocumentChanged];
-    [NSApp addObserver:self forKeyPath:@"mainWindow.windowController.document" options:0 context:[DocumentPropertiesPanelController class]];
+    [NSApp addObserver:self forKeyPath:@"mainWindow.windowController.document" options:0 context:(__bridge void * _Nullable)([DocumentPropertiesPanelController class])];
 
     NSWindow *window = [self window];
     [window setIdentifier:@"DocumentProperties"];
@@ -132,9 +132,9 @@
 - (IBAction)toggleWindow:(id)sender {
     NSWindow *window = [self window];
     if ([window isVisible] && [window isKeyWindow]) {
-	[[self window] orderOut:sender];
+		[[self window] orderOut:sender];
     } else {
-	[[self window] makeKeyAndOrderFront:sender];
+		[[self window] makeKeyAndOrderFront:sender];
     }
 }
 
@@ -142,8 +142,8 @@
 */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
     if ([menuItem action] == @selector(toggleWindow:)) {   // Correctly toggle the menu item for showing/hiding document properties
-	// We call [self isWindowLoaded] first since it prevents [self window] from loading the nib
-	validateToggleItem(menuItem, [self isWindowLoaded] && [[self window] isVisible], NSLocalizedString(@"Hide Properties", @"Title for menu item to hide the document properties panel."), NSLocalizedString(@"Show Properties", @"Title for menu item to show the document properties panel (should be the same as the initial menu item in the nib)."));
+		// We call [self isWindowLoaded] first since it prevents [self window] from loading the nib
+		validateToggleItem(menuItem, [self isWindowLoaded] && [[self window] isVisible], NSLocalizedString(@"Hide Properties", @"Title for menu item to hide the document properties panel."), NSLocalizedString(@"Show Properties", @"Title for menu item to show the document properties panel (should be the same as the initial menu item in the nib)."));
     }
     return YES;
 }

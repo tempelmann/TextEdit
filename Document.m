@@ -88,14 +88,14 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
         topologicallySortedReadableTypes = [self readableTypes];
         topologicallySortedReadableTypes = [topologicallySortedReadableTypes sortedArrayUsingComparator:^NSComparisonResult(id type1, id type2) {
             if (type1 == type2) return NSOrderedSame;
-            if (UTTypeConformsTo((CFStringRef)type1, (CFStringRef)type2)) return NSOrderedAscending;
-            if (UTTypeConformsTo((CFStringRef)type2, (CFStringRef)type1)) return NSOrderedDescending;
+			if (UTTypeConformsTo((__bridge CFStringRef)type1, (__bridge CFStringRef)type2)) return NSOrderedAscending;
+            if (UTTypeConformsTo((__bridge CFStringRef)type2, (__bridge CFStringRef)type1)) return NSOrderedDescending;
             return (((NSUInteger)type1 < (NSUInteger)type2) ? NSOrderedAscending : NSOrderedDescending);
         }];
         [topologicallySortedReadableTypes retain];
     });
     for (NSString *readableType in topologicallySortedReadableTypes) {
-        if (UTTypeConformsTo((CFStringRef)type, (CFStringRef)readableType)) return readableType;
+        if (UTTypeConformsTo((__bridge CFStringRef)type, (__bridge CFStringRef)readableType)) return readableType;
     }
     return nil;
 }
@@ -642,7 +642,7 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
     id printingView;
     if (multiPage) {    // If already in multiple-page ("wrap-to-page") mode, we simply use the display view for printing
         printingView = documentView;
-        [[[[self windowControllers] objectAtIndex:0] firstTextView] textEditDoForegroundLayoutToCharacterIndex:NSIntegerMax];		// Make sure the whole document is laid out before printing
+        [[(DocumentWindowController*)[[self windowControllers] objectAtIndex:0] firstTextView] textEditDoForegroundLayoutToCharacterIndex:NSIntegerMax];		// Make sure the whole document is laid out before printing
     } else {            // Otherwise we create a new text view (along with a text container and layout manager)
         printingView = [[[PrintingTextView alloc] init] autorelease];   // PrintingTextView is a simple subclass of NSTextView. Creating the view this way creates rest of the text system, which it will release when dealloc'ed (since the print panel will be releasing this, we want to hand off the responsibility of release everything)
         NSLayoutManager *layoutManager = [[[[printingView textContainer] layoutManager] retain] autorelease];
@@ -651,7 +651,7 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
         [unnecessaryTextStorage release];
         [textStorage addLayoutManager:layoutManager];
         [textStorage retain];   // Since later release of the printingView will release the textStorage as well
-        [printingView setLayoutOrientation:[[[[self windowControllers] objectAtIndex:0] firstTextView] layoutOrientation]];
+        [printingView setLayoutOrientation:[[(DocumentWindowController*)[[self windowControllers] objectAtIndex:0] firstTextView] layoutOrientation]];
     }
     
     PrintPanelAccessoryController *accessoryController = [[[PrintPanelAccessoryController alloc] init] autorelease];
@@ -666,7 +666,7 @@ NSString *OpenDocumentTextType = @"org.oasis-open.opendocument.text";
 
     NSPrintPanel *printPanel = [op printPanel];
     if (!multiPage) {
-        [printingView setOriginalSize:[[[[self windowControllers] objectAtIndex:0] firstTextView] frame].size];
+        [printingView setOriginalSize:[[(DocumentWindowController*)[[self windowControllers] objectAtIndex:0] firstTextView] frame].size];
         [printingView setPrintPanelAccessoryController:accessoryController];
         // We allow changing print parameters if not in "Wrap to Page" mode, where the page setup settings are used
         [printPanel setOptions:[printPanel options] | NSPrintPanelShowsPaperSize | NSPrintPanelShowsOrientation];
@@ -1093,13 +1093,11 @@ In addition we overwrite this method as a way to tell that the document has been
                     if (!duplicateDocument) {
                         NSWindow *sheetWindow = [self windowForSheet];
                         if (sheetWindow) {
-                            [delegate retain];
                             [self presentError:duplicateError
                                     modalForWindow:sheetWindow
                                     delegate:self
                                     didPresentSelector:@selector(didPresentErrorWithRecovery:block:)
                                     contextInfo:Block_copy(^(BOOL didRecover) {
-                                        [delegate release];
                                         ((void (*)(id, SEL, BOOL, void *))objc_msgSend)(delegate, didRecoverSelector, NO, contextInfo);
                                     })];
                             return;
@@ -1119,13 +1117,11 @@ In addition we overwrite this method as a way to tell that the document has been
                 break;
             case TextEditSaveErrorEncodingInapplicable:
                 if (recoveryOptionIndex == 0) { // OK button
-                    [delegate retain];
                     [self continueActivityUsingBlock:^(void) {
                     [self runModalSavePanelForSaveOperation:NSSaveOperation
                         delegate:self
                         didSaveSelector:@selector(document:didSave:block:)
                         contextInfo:Block_copy(^(BOOL didSave) {
-                            [delegate release];
                             ((void (*)(id, SEL, BOOL, void *))objc_msgSend)(delegate, didRecoverSelector, didSave, contextInfo);
                         })];
                     }];
@@ -1211,7 +1207,7 @@ In addition we overwrite this method as a way to tell that the document has been
     }
         
     // Set the text layout orientation for each page
-    if ((val = [[[self windowControllers] objectAtIndex:0] layoutOrientationSections])) [dict setObject:val forKey:NSTextLayoutSectionsAttribute];
+    if ((val = [(DocumentWindowController*)[[self windowControllers] objectAtIndex:0] layoutOrientationSections])) [dict setObject:val forKey:NSTextLayoutSectionsAttribute];
 
     // Set the document properties, generically, going through key value coding
     for (NSString *property in [self knownDocumentProperties]) {
