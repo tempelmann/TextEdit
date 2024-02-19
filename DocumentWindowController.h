@@ -65,6 +65,8 @@
 
 - (NSView *)documentView;
 
+- (NSTextView *)firstTextView;
+
 - (void)breakUndoCoalescing;
 
 /* Layout orientation sections */

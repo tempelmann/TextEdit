@@ -72,8 +72,6 @@
 - (void)addPage;
 - (void)removePage;
 
-- (NSTextView *)firstTextView;
-
 - (void)printInfoUpdated;
 
 - (void)resizeWindowForViewSize:(NSSize)size;
