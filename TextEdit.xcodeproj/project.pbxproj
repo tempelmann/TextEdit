@@ -113,7 +113,7 @@
 		6FE20924FE93D5F211CA2CEA /* TextEdit.scriptTerminology */ = {isa = PBXFileReference; lastKnownFileType = text.plist.scriptTerminology; path = TextEdit.scriptTerminology; sourceTree = "<group>"; };
 		6FE20926FE93D5F211CA2CEA /* TextEdit.scriptSuite */ = {isa = PBXFileReference; lastKnownFileType = text.plist.scriptSuite; path = TextEdit.scriptSuite; sourceTree = "<group>"; };
 		6FE20929FE93D5F211CA2CEA /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
-		6FE20936FE93D5F211CA2CEA /* README.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = README.rtf; sourceTree = "<group>"; };
+		6FE20936FE93D5F211CA2CEA /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		6FE20938FE93D5F211CA2CEA /* TextEdit.scatterload */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TextEdit.scatterload; sourceTree = "<group>"; };
 		92A68B0A02972957007F9DE6 /* EncodingManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncodingManager.h; sourceTree = "<group>"; };
 		92A68B0B02972957007F9DE6 /* EncodingManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EncodingManager.m; sourceTree = "<group>"; };
@@ -157,7 +157,7 @@
 		6FE208F9FE93D5F211CA2CEA /* TextEdit */ = {
 			isa = PBXGroup;
 			children = (
-				6FE20936FE93D5F211CA2CEA /* README.rtf */,
+				6FE20936FE93D5F211CA2CEA /* README.md */,
 				6FE20903FE93D5F211CA2CEA /* Document.h */,
 				6FE208FBFE93D5F211CA2CEA /* Document.m */,
 				FB69D01E085E20E300646BBF /* DocumentWindowController.h */,
